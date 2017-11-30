@@ -16,8 +16,8 @@ class build_py(_build_py):
     def run(self):
         script_dir = path.dirname(path.realpath(__file__))
         src_dir = path.join(script_dir, "library")
-        build_dir = path.join(script_dir, self.build_lib, "build")
-        bin_dir = path.join(script_dir, self.build_lib, "tinyspline")
+        build_dir = path.join(script_dir, "build")
+        bin_dir = path.join(script_dir, "tinyspline")
 
         if not path.exists(build_dir):
             print("creating cmake build directory")
@@ -34,6 +34,13 @@ class build_py(_build_py):
                      "-DCMAKE_BUILD_TYPE=" + cmake_build_config,
                      "-DTINYSPLINE_PYTHON_VERSION=" + str(sys.version_info[0]),
                      "-Wno-dev"]
+        if sys.platform == 'win32':
+            import platform
+            if platform.architecture()[0] == '64bit':
+                cmake_cmd += ["-G", "Visual Studio 14 2015 Win64"]
+            else:
+                cmake_cmd += ["-G", "Visual Studio 14 2015"]
+            cmake_cmd += ["-DPYTHON_EXECUTABLE=" + sys.executable]
         if subprocess.call(cmake_cmd) != 0:
             raise EnvironmentError("error calling cmake")
         chdir(script_dir)
